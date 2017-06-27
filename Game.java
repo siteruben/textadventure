@@ -18,13 +18,15 @@
 class Game
 {
     private Parser parser;
-    private Room currentRoom;
+    private Player player;
+    boolean finished = false;
 
     /**
      * Create the game and initialise its internal map.
      */
     public Game()
-    {
+    {	
+    	player = new Player();
         createRooms();
         parser = new Parser();
     }
@@ -34,30 +36,75 @@ class Game
      */
     private void createRooms()
     {
-        Room outside, theatre, pub, lab, office;
+        Room outside, atrium, overseerOffice, mainEntrance, upperLevel, adminZone, escapeRoom, classroom, medicalCenter, lowerLevel, cafeteria, residential, reactorRoom, overseerQuarters, centralWasteland, southernWasteland, easternWasteland, city, northernWasteland, westernWasteland, doctor ;
 
         // create the rooms
-        outside = new Room("outside the main entrance of the university");
-        theatre = new Room("in a lecture theatre");
-        pub = new Room("in the campus pub");
-        lab = new Room("in a computing lab");
-        office = new Room("in the computing admin office");
+        outside = new Room("outside the main entrance of the abandoned vault, the Wasteland is behind you");
+        mainEntrance = new Room("inside the main entrance of the vault");
+        atrium = new Room("in the vaults atrium");
+        upperLevel = new Room("on the upper levels standing on the bridge crossing the atrium");
+        adminZone = new Room("in the adminstration zone of the vault");
+        overseerQuarters = new Room("in the overseers quarters you decide to make it your room");
+        overseerOffice = new Room("in the overseers office and look down on the vaults atrium");
+        escapeRoom = new Room("in the hidden escape tunnel under the overseers desk");
+        classroom = new Room("inside the vaults old classroom");
+        medicalCenter = new Room("in the vaults medical center, you find enough medical suplies to keep you going until you find a doctor in the wasteland");
+        lowerLevel = new Room("in the lower levels of the vault");
+        cafeteria = new Room("in the old cafeteria");
+        residential = new Room("in the residential block, you find an old vault 73 jumpsuit and put it on");
+        reactorRoom = new Room("in the old reactor room, you try to turn the reactor on and have returned power back to the vault. It may be possible to start a colony now");
+        centralWasteland = new Room("CENTRAL WASTELAND");
+        southernWasteland = new Room("SOUTHERN WASTELAND");
+        easternWasteland = new Room("EASTERB WASTELAND");
+        city = new Room("GENERIC CITY");
+        northernWasteland = new Room("NORTHERN WASTELAND");
+        westernWasteland = new Room("WESTERN WASTELAND");
+        doctor = new Room("in the doctors office /n you have reached your final destination");
+        
 
         // initialise room exits
-        outside.setExit("east", theatre);
-        outside.setExit("south", lab);
-        outside.setExit("west", pub);
+        outside.setExit("north", mainEntrance );
+        mainEntrance.setExit("south", outside);
+        mainEntrance.setExit("down", atrium);
+        atrium.setExit("up", upperLevel);
+        atrium.setExit("down", lowerLevel);
+        atrium.setExit("entrance", mainEntrance);
+        upperLevel.setExit("north", medicalCenter );
+        upperLevel.setExit("west", adminZone );
+        upperLevel.setExit("east", classroom);
+        medicalCenter.setExit("south", upperLevel);
+        classroom.setExit("west", upperLevel);
+        adminZone.setExit("east", upperLevel);
+        adminZone.setExit("north", overseerQuarters);
+        adminZone.setExit("west", overseerOffice);
+        overseerQuarters.setExit("south", adminZone);
+        overseerOffice.setExit("east", adminZone);
+        overseerOffice.setExit("down", escapeRoom);
+        escapeRoom.setExit("up", overseerOffice);
+        escapeRoom.setExit("north", mainEntrance);
+        lowerLevel.setExit("up", atrium);
+        lowerLevel.setExit("west", reactorRoom);
+        lowerLevel.setExit("north", residential);
+        lowerLevel.setExit("east", cafeteria);
+        reactorRoom.setExit("east", lowerLevel);
+        cafeteria.setExit("west", lowerLevel);
+        residential.setExit("south", lowerLevel);
+        outside.setExit("south", centralWasteland);
+        centralWasteland.setExit("north", outside);
+        centralWasteland.setExit("east", easternWasteland);
+        easternWasteland.setExit("west", centralWasteland);
+        easternWasteland.setExit("east", city);
+        city.setExit("west", easternWasteland);
+        city.setExit("east", doctor);
+        centralWasteland.setExit("south", southernWasteland);
+        southernWasteland.setExit("north", centralWasteland);
+        southernWasteland.setExit("west", westernWasteland);
+        westernWasteland.setExit("east", southernWasteland);
+        
 
-        theatre.setExit("west", outside);
 
-        pub.setExit("east", outside);
 
-        lab.setExit("north", outside);
-        lab.setExit("east", office);
-
-        office.setExit("west", lab);
-
-        currentRoom = outside;  // start game outside
+        player.setCurrentRoom(outside);  // start game outside
     }
 
     /**
@@ -70,7 +117,7 @@ class Game
         // Enter the main command loop.  Here we repeatedly read commands and
         // execute them until the game is over.
 
-        boolean finished = false;
+        
         while (! finished) {
             Command command = parser.getCommand();
             finished = processCommand(command);
@@ -83,12 +130,15 @@ class Game
      */
     private void printWelcome()
     {
-        System.out.println();
-        System.out.println("Welcome to Adventure!");
-        System.out.println("Adventure is a new, incredibly boring adventure game.");
+        
+        System.out.println("Welcome to Fallout TA!");
+        System.out.println("Fallout TA is a text adventure game where you exlore the deserted vault 73 .");
         System.out.println("Type 'help' if you need help.");
         System.out.println();
-        System.out.println(currentRoom.getLongDescription());
+        System.out.println("You are lost. You are wounded. You wander the wasteland");
+        System.out.println("and stumble at an abandoned vault.");
+        System.out.println();
+        System.out.println(player.getCurrentRoom().getLongDescription());
     }
 
     /**
@@ -114,6 +164,13 @@ class Game
             look(command);
         else if (commandWord.equals("quit"))
             wantToQuit = quit(command);
+        else if (commandWord.equals("health")){
+        	System.out.println(player.getHealth());
+        }
+        else if (commandWord.equals("heal")){
+        	player.setHealth(50);
+        	System.out.println("You jam a stimpack in your wounds to heal them");
+        }
         return wantToQuit;
     }
 
@@ -126,8 +183,8 @@ class Game
      */
     private void printHelp()
     {
-        System.out.println("You are lost. You are alone. You wander");
-        System.out.println("around at the university.");
+        System.out.println("You are lost. You are wounded. You wander the wasteland");
+        System.out.println("and stumble at an abandoned vault.");
         System.out.println();
         System.out.println("Your command words are:");
         parser.showCommands();
@@ -148,19 +205,24 @@ class Game
         String direction = command.getSecondWord();
 
         // Try to leave current room.
-        Room nextRoom = currentRoom.getExit(direction);
+        Room nextRoom = player.getCurrentRoom().getExit(direction);
 
         if (nextRoom == null)
             System.out.println("There is no door!");
         else {
-            currentRoom = nextRoom;
-            System.out.println(currentRoom.getLongDescription());
+            player.setCurrentRoom(nextRoom);
+            player.damage(10);
+            player.isAlive();
+            if (!player.isAlive()) {
+            	finished = true;
+            }
+            System.out.println(player.getCurrentRoom().getLongDescription());
         }
     }
 
     private void look(Command command) {
     	if(!command.hasSecondWord()) {
-    		System.out.println(currentRoom.getLongDescription());
+    		System.out.println(player.getCurrentRoom().getLongDescription());
     		return;
     	}
     }
@@ -178,7 +240,6 @@ class Game
         else
             return true;  // signal that we want to quit
     }
-
 
     public static void main(String[] args)
     {
